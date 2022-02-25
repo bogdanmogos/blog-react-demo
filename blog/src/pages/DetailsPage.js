@@ -1,14 +1,14 @@
-import { string } from 'prop-types';
-import React, { Component } from 'react';
-import Footer from '../components/Footer';
-import { useParams } from 'react-router-dom';
+import { string } from "prop-types";
+import React, { Component } from "react";
+import Footer from "../components/Footer";
+import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import Article from '../components/Article';
-
+import Article from "../components/Article";
+import Loader from "../components/Loader";
 
 class DetailsPage extends Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       title: "",
       tag: "",
@@ -19,8 +19,9 @@ class DetailsPage extends Component {
       content: "",
       id: "",
       nextId: null,
-      prevId: null
-    }
+      prevId: null,
+      isShowLoad: true,
+    };
     this.handleNext = this.handleNext.bind(this);
     this.handlePrevious = this.handlePrevious.bind(this);
     this.getArticle = this.getArticle.bind(this);
@@ -29,20 +30,16 @@ class DetailsPage extends Component {
     second: string,
   };
 
-
   handleNext() {
     const { nextId } = this.state;
     const { navigate } = this.props;
     navigate(nextId, { replace: true });
-
-
   }
 
   handlePrevious() {
     const { prevId } = this.state;
     const { navigate } = this.props;
     navigate(prevId, { replace: true });
-
   }
 
   getArticle() {
@@ -52,68 +49,76 @@ class DetailsPage extends Component {
       .then(
         function (response) {
           if (response.status !== 200) {
-            console.log('Looks like there was a problem. Status Code: ' +
-              response.status);
+            console.log(
+              "Looks like there was a problem. Status Code: " + response.status
+            );
             return;
           }
-          response.json()
-            .then(data => {
-              this.setState({
-                ...data,
-              })
+          response.json().then((data) => {
+            this.setState({
+              ...data,
+              isShowLoad: false,
             });
+          });
         }.bind(this)
       )
       .catch(function (err) {
-        console.log('Fetch Error :-S', err);
+        console.log("Fetch Error :-S", err);
       });
   }
 
   componentDidMount() {
-    this.getArticle()
+    this.getArticle();
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.params !== this.props.params) {
       this.getArticle();
     }
-
   }
 
   render() {
-    const { nextId, prevId, title, tag, author, date, imgUrl, saying, content, id } = this.state;
+    const {
+      nextId,
+      prevId,
+      title,
+      tag,
+      author,
+      date,
+      imgUrl,
+      saying,
+      content,
+      id,
+      isShowLoad,
+    } = this.state;
     const isNext = nextId === null ? false : true;
     const isPrevious = prevId === null ? false : true;
-    const article = { title, tag, author, date, imgUrl, saying, content, id }
+    const article = { title, tag, author, date, imgUrl, saying, content, id };
 
+    let loader;
+    if (isShowLoad) {
+      loader = <Loader />;
+    }
 
-    return <div>
-      <Article
-        article={article}
-        isDetails={true}
-      />
-      <Footer
-        handleNext={this.handleNext}
-        handlePrevious={this.handlePrevious}
-        isNext={isNext}
-        isPrevious={isPrevious}
-      />
-    </div>;
+    return (
+      <div>
+        {loader}
+        <Article article={article} isDetails={true} />
+        <Footer
+          handleNext={this.handleNext}
+          handlePrevious={this.handlePrevious}
+          isNext={isNext}
+          isPrevious={isPrevious}
+        />
+      </div>
+    );
   }
 }
-
-
 
 const withRouter = (WrappedComponent) => (props) => {
   const params = useParams();
   const navigate = useNavigate();
-  return (
-    <WrappedComponent
-      {...props}
-      params={params}
-      navigate={navigate}
-    />
-  );
+  return <WrappedComponent {...props} params={params} navigate={navigate} />;
 };
 
 export default withRouter(DetailsPage);
