@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import Article from "../components/Article";
 import Footer from "../components/Footer";
 import Loader from "../components/Loader";
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 
 export default class HomePage extends Component {
   constructor(props) {
@@ -102,8 +103,7 @@ export default class HomePage extends Component {
       });
   }
 
-  createNewArticle() {
-    const { title, tag, author, imgUrl, saying, content, date } = this.state;
+  createNewArticle(article) {
 
     fetch("http://localhost:3007/articles", {
       method: "POST",
@@ -111,14 +111,8 @@ export default class HomePage extends Component {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        title,
-        imgUrl,
+        ...article,
         imgAlt: "photo",
-        content,
-        tag,
-        author,
-        date,
-        saying,
       }),
     })
       .then((res) => res.json())
@@ -129,9 +123,7 @@ export default class HomePage extends Component {
       .catch((err) => console.log(err));
   }
 
-  editArticle() {
-    const { title, tag, author, imgUrl, saying, content, date, id } =
-      this.state;
+  editArticle(article, id) {
 
     fetch("http://localhost:3007/articles/" + id, {
       method: "PUT",
@@ -139,14 +131,9 @@ export default class HomePage extends Component {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        title,
-        imgUrl,
+        ...article,
         imgAlt: "photo",
-        content,
-        tag,
-        author,
-        date,
-        saying,
+
       }),
     })
       .then((res) => res.json())
@@ -236,6 +223,7 @@ export default class HomePage extends Component {
       indexEnd,
       id,
       isShowLoad,
+      title, tag, author, date, imgUrl, saying, content
     } = this.state;
 
     const filteredArticles = articles.map((article) => (
@@ -289,7 +277,86 @@ export default class HomePage extends Component {
             <div className="modal__content">
               <h2 className="title modal-title">Add/Edit article</h2>
               <div className="inputs__container">
-                <input
+                <Formik
+                  enableReinitialize
+                  initialValues={{ title, tag, author, date, imgUrl, saying, content }}
+                  validate={values => {
+                    const errors = {};
+                    if (!values.title) {
+                      errors.title = 'Required';
+                    }
+                    if (!values.tag) {
+                      errors.tag = 'Required';
+                    }
+                    if (!values.author) {
+                      errors.author = 'Required';
+                    }
+                    return errors;
+                  }}
+                  onSubmit={(values) => {
+                    const { id } = this.state;
+                    if (id) {
+                      this.editArticle(values, id)
+                    } else {
+                      this.createNewArticle(values)
+                    }
+
+                  }}
+                >
+                  {({ isSubmitting }) => (
+                    <Form>
+                      <Field type="text" name="title" />
+                      <ErrorMessage name="title" component="div" />
+                      <Field type="text" name="tag" />
+                      <ErrorMessage name="tag" component="div" />
+                      <Field type="text" name="author" />
+                      <ErrorMessage name="author" component="div" />
+                      <Field type="text" name="date" />
+                      <ErrorMessage name="date" component="div" />
+                      <Field type="text" name="imgUrl" />
+                      <ErrorMessage name="imgUrl" component="div" />
+                      <Field type="text" name="saying" />
+                      <ErrorMessage name="saying" component="div" />
+                      <Field type="text" name="content" as="textarea" />
+                      <ErrorMessage name="content" component="div" />
+
+                      <button type="submit" disabled={isSubmitting}>
+                        Submit
+                      </button>
+                      <div className="modal__buttons">
+                        <button
+                          type="button"
+                          className="button close-modal"
+                          onClick={this.closeModalResetForm}
+                        >
+                          Cancel
+                        </button>
+                        {id === null ? (
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+
+                            className="button button--pink"
+                          >
+                            Save
+                          </button>
+                        ) : (
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="button button--pink"
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+
+
+
+                {/* <input
                   type="text"
                   name="title"
                   className="input margin"
@@ -337,9 +404,9 @@ export default class HomePage extends Component {
                   placeholder="Please enter saying"
                   value={this.state.saying}
                   onChange={this.handleChangeInput}
-                />
+                /> */}
               </div>
-              <textarea
+              {/* <textarea
                 name="content"
                 className="textarea"
                 id="textarea"
@@ -348,33 +415,8 @@ export default class HomePage extends Component {
                 placeholder="Please enter content"
                 value={this.state.content}
                 onChange={this.handleChangeInput}
-              ></textarea>
-              <div className="modal__buttons">
-                <button
-                  type="button"
-                  className="button close-modal"
-                  onClick={this.closeModalResetForm}
-                >
-                  Cancel
-                </button>
-                {id === null ? (
-                  <button
-                    type="button"
-                    className="button button--pink"
-                    onClick={this.createNewArticle}
-                  >
-                    Save
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="button button--pink"
-                    onClick={this.editArticle}
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
+              ></textarea> */}
+
             </div>
             <div id="error-modal"></div>
           </div>
