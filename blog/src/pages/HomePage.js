@@ -251,14 +251,12 @@ export default class HomePage extends Component {
     const isNext = totalNumberOfArticles - 1 > indexEnd ? true : false;
     // 4 articole/pag si 5 articole in total => indexStart = 0 & indexEnd = 3
 
-    let loader;
     if (isShowLoad) {
-      loader = <Loader />;
+      return <Loader />;
     }
 
     return (
       <>
-        {loader}
         <div>
           <div className="add__container">
             <button

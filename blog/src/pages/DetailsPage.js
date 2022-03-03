@@ -95,14 +95,12 @@ class DetailsPage extends Component {
     const isPrevious = prevId === null ? false : true;
     const article = { title, tag, author, date, imgUrl, saying, content, id };
 
-    let loader;
     if (isShowLoad) {
-      loader = <Loader />;
+      return <Loader />;
     }
 
     return (
       <div>
-        {loader}
         <Article article={article} isDetails={true} />
         <Footer
           handleNext={this.handleNext}
